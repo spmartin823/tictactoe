@@ -1,0 +1,117 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>tictactoe</title>
+    <meta name="description" content="vanilla dig dug">
+    <meta name="author" content="seamus martin">
+    <style>
+        .centered {
+            display: table;
+            margin: auto
+        }
+
+        .x, .o {
+            text
+        }
+
+        .unplayed .x, .unplayed .o {
+            display: none;
+        }
+
+        div[id^="square"] {
+            border: black 1px solid;
+            display: inline-block;
+        }
+
+        div[id^="square_0"] {
+            border-top: none;
+        }
+
+        div[id^="square_2"], div[id^="square_0"] {
+            border-bottom: none;
+        }
+
+        #square_0_0, #square_1_0, #square_2_0 {
+            border-left: none;
+        }
+
+        #square_0_2, #square_1_2,  #square_2_2 {
+            border-right: none;
+        }
+    </style>
+</head>
+
+<body>
+<div class="centered">
+    <h3 style="padding: 10px; color: darkcyan">Player 1's turn!</h3>
+    <h3 style="display: none; padding: 10px; color: darkgreen">Player 2's turn!</h3>
+</div>
+<div class="centered" id="gameboard"/>
+
+<script>
+  const gameState = {
+    playersTurn: 1,
+    pieces: [ // enum: O for unplayed, 1 for player one, 2 for player 2
+      [0, 0, 0],
+      [0, 0, 0],
+      [0, 0, 0],
+    ],
+    status: 0, // enum: O for no winner, 1 for player 1 win, 2 for player 2 win, 3 for draw.
+  };
+
+  function updateGameStatus() {
+
+  }
+
+  function getIdForSquare(rowIdx, colIdx) {
+    return `square_${rowIdx}_${colIdx}`;
+  }
+
+  function onClick(rowIdx, colIdx) {
+    gameState.pieces[rowIdx][colIdx] = gameState.playersTurn;
+    const targetElement = document.getElementById(getIdForSquare(rowIdx, colIdx));
+    targetElement.querySelector(gameState.playersTurn === 1 ? '.x' : '.o').className = 'played';
+    updateGameStatus();
+    if (gameState.status !== 0) {
+      gameState.playersTurn = gameState.playersTurn === 1 ? 2 : 1
+    } else {
+      // display winner and startover button.
+    }
+  }
+
+  function initGameBoard() {
+    const gameBoard = document.getElementById('gameboard');
+    const x = document.createElement('div');
+    x.innerText = 'X';
+    x.className = 'x';
+    const o = document.createElement('div');
+    o.innerText = 'O';
+    o.className = 'o';
+
+    gameState.pieces.forEach((row, rowIdx) => {
+      const rowWrapper = document.createElement('div');
+      row.forEach((el, colIdx) => {
+        const element = document.createElement('div');
+        element.id = `square_${rowIdx}_${colIdx}`;
+        element.style.height = element.style.width = '50px';
+        element.className = 'unplayed';
+        element.onclick = () => onClick(rowIdx, colIdx);
+
+        element.appendChild(x.cloneNode(true));
+        element.appendChild(o.cloneNode(true));
+        rowWrapper.appendChild(element);
+      });
+      gameBoard.appendChild(rowWrapper);
+    });
+  }
+
+  function init() {
+    initGameBoard();
+  }
+
+  init();
+</script>
+</body>
+</html>
