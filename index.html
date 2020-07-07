@@ -61,6 +61,10 @@
     status: 0, // enum: O for no winner, 1 for player 1 win, 2 for player 2 win, 3 for draw.
   };
 
+  function getIdForSquare(rowIdx, colIdx) {
+    return `square-${rowIdx}-${colIdx}`;
+  }
+
   function updateGameStatus() {
     const { pieces } = gameState;
     const isXHorizontalWin = pieces.some(row => row.every(e => e === 1));
@@ -93,6 +97,14 @@
   function updateActivePlayer() {
     const originalPlayersTurn = gameState.playersTurn;
     gameState.playersTurn = originalPlayersTurn === 1 ? 2 : 1;
+  }
+
+  function displayActivePlayer() {
+    if (gameState.status !== 0) {
+      document.querySelectorAll(`[id^='player-label'`).forEach(e => e.style.display = 'none');
+      return;
+    }
+    const originalPlayersTurn = gameState.playersTurn === 1 ? 2 : 1;
     document.getElementById(`player-label-${originalPlayersTurn}`).style.display = 'none';
     document.getElementById(`player-label-${gameState.playersTurn}`).style.display = 'block';
   }
@@ -113,12 +125,16 @@
     }
   }
 
-  function displayPlayAgain() {
-    document.getElementById('play-again').style.display = 'block';
+  function displayMove(rowIdx, colIdx) {
+    const targetElement = document.getElementById(getIdForSquare(rowIdx, colIdx));
+    targetElement.innerText = gameState.playersTurn === 1 ? 'X' : 'O';
+    targetElement.className = 'played';
   }
 
-  function getIdForSquare(rowIdx, colIdx) {
-    return `square-${rowIdx}-${colIdx}`;
+  function displayPlayAgain() {
+    if (gameState.status !== 0) {
+      document.getElementById('play-again').style.display = 'block';
+    }
   }
 
   function onClick(rowIdx, colIdx) {
@@ -126,21 +142,16 @@
     if (gameState.status !== 0) {
       return;
     }
-
+    // Logic
     gameState.pieces[rowIdx][colIdx] = gameState.playersTurn;
-    const targetElement = document.getElementById(getIdForSquare(rowIdx, colIdx));
-    targetElement.innerText = gameState.playersTurn === 1 ? 'X' : 'O';
-    targetElement.className = 'played';
-
     updateGameStatus();
-    if (gameState.status === 0) {
-      updateActivePlayer();
-    } else {
-      displayWinStatus();
-      displayPlayAgain();
-      console.log(`Player ${gameState.status} Won!`);
-      // display winner and startover button.
-    }
+    updateActivePlayer();
+
+    // Render
+    displayMove(rowIdx, colIdx);
+    displayActivePlayer();
+    displayWinStatus();
+    displayPlayAgain();
   }
 
   function initGameBoard() {
@@ -161,11 +172,7 @@
     });
   }
 
-  function init() {
-    initGameBoard();
-  }
-
-  init();
+  initGameBoard();
 </script>
 </body>
 </html>
