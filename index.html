@@ -7,48 +7,38 @@
     <meta name="description" content="tictactoe">
     <meta name="author" content="seamus martin">
     <style>
-        .centered {
-            display: table;
-            margin: auto
-        }
-
         .played {
             text-align: center;
             font-size: 40px;
-            display: inline;
+        }
+
+        #gameboard {
+            display: grid;
+            grid-template-columns: repeat(3, auto);
+            width: 153px; /* child elements are 50px each. 3 * 50 + 1 (for border) === 153px. */
+            height: 153px; /* child elements are 50px each. 3 * 50 + 1 (for border) === 153px. */
+            margin: auto;
         }
 
         div[id^="square"] {
-            border: black 1px solid;
-            display: inline-block;
-        }
-
-        div[id^="square-0"] {
-            border-top: none;
-        }
-
-        div[id^="square-2"], div[id^="square-0"] {
-            border-bottom: none;
-        }
-
-        #square-0-0, #square-1-0, #square-2-0 {
-            border-left: none;
-        }
-
-        #square-0-2, #square-1-2, #square-2-2 {
-            border-right: none;
+            cursor: pointer;
+            border: 1px solid gray;
+            width: 50px;
+            height: 50px;
         }
     </style>
 </head>
 
 <body>
-<div class="centered">
+<div style="display:flex; justify-content: center; align-items: center;">
     <h3 id="player-label-1" style="padding: 10px; color: darkcyan">Player 1's turn!</h3>
     <h3 id="player-label-2" style="display: none; padding: 10px; color: darkgreen">Player 2's turn!</h3>
-    <h3 id="status"></h3>
-    <button id="play-again" style="display: none" onclick="window.location.reload();">Play Again</button>
+    <div style="display: block;">
+        <h3 id="status"></h3>
+        <button id="play-again" style="display: none; margin: 5px auto" onclick="window.location.reload();">Play Again</button>
+    </div>
 </div>
-<div class="centered" id="gameboard"/>
+<div id="gameboard"/>
 
 <script>
   const gameState = {
@@ -162,9 +152,6 @@
       row.forEach((el, colIdx) => {
         const element = document.createElement('div');
         element.id = getIdForSquare(rowIdx, colIdx);
-        element.style.height = element.style.width = '50px';
-        element.style.marginBottom = '-10px';
-        element.className = 'unplayed';
         element.onclick = () => onClick(rowIdx, colIdx);
         rowWrapper.appendChild(element);
       });
