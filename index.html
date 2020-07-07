@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <title>tictactoe</title>
-    <meta name="description" content="vanilla dig dug">
+    <meta name="description" content="tictactoe">
     <meta name="author" content="seamus martin">
     <style>
         .centered {
@@ -12,12 +12,10 @@
             margin: auto
         }
 
-        .x, .o {
-            text
-        }
-
-        .unplayed .x, .unplayed .o {
-            display: none;
+        .played {
+            text-align: center;
+            font-size: 40px;
+            display: inline;
         }
 
         div[id^="square"] {
@@ -25,19 +23,19 @@
             display: inline-block;
         }
 
-        div[id^="square_0"] {
+        div[id^="square-0"] {
             border-top: none;
         }
 
-        div[id^="square_2"], div[id^="square_0"] {
+        div[id^="square-2"], div[id^="square-0"] {
             border-bottom: none;
         }
 
-        #square_0_0, #square_1_0, #square_2_0 {
+        #square-0-0, #square-1-0, #square-2-0 {
             border-left: none;
         }
 
-        #square_0_2, #square_1_2,  #square_2_2 {
+        #square-0-2, #square-1-2, #square-2-2 {
             border-right: none;
         }
     </style>
@@ -45,14 +43,16 @@
 
 <body>
 <div class="centered">
-    <h3 style="padding: 10px; color: darkcyan">Player 1's turn!</h3>
-    <h3 style="display: none; padding: 10px; color: darkgreen">Player 2's turn!</h3>
+    <h3 id="player-label-1" style="padding: 10px; color: darkcyan">Player 1's turn!</h3>
+    <h3 id="player-label-2" style="display: none; padding: 10px; color: darkgreen">Player 2's turn!</h3>
+    <h3 id="status"></h3>
+    <button id="play-again" style="display: none" onclick="window.location.reload();">Play Again</button>
 </div>
 <div class="centered" id="gameboard"/>
 
 <script>
   const gameState = {
-    playersTurn: 1,
+    playersTurn: 1, // 1 for player 1, 2 for player 2
     pieces: [ // enum: O for unplayed, 1 for player one, 2 for player 2
       [0, 0, 0],
       [0, 0, 0],
@@ -62,45 +62,99 @@
   };
 
   function updateGameStatus() {
+    const { pieces } = gameState;
+    const isXHorizontalWin = pieces.some(row => row.every(e => e === 1));
+    const isYHorizontalWin = pieces.some(row => row.every(e => e === 2));
 
+    const isXVerticalWin = pieces.some((row, idx, arr) => ([arr[0][idx], arr[1][idx], arr[2][idx]]).every(e => e === 1));
+    const isYVerticalWin = pieces.some((row, idx, arr) => ([arr[0][idx], arr[1][idx], arr[2][idx]]).every(e => e === 2));
+
+    const isXCrossWin = pieces[1][1] === 1 && (
+      (pieces[0][0] === 1 && pieces[2][2] === 1) || (pieces[2][0] === 1 && pieces[0][2] === 1)
+    );
+
+    const isYCrossWin = pieces[1][1] === 2 && (
+      (pieces[0][0] === 2 && pieces[2][2] === 2) || (pieces[2][0] === 2 && pieces[0][2] === 2)
+    );
+
+    if (isXCrossWin || isXHorizontalWin || isXVerticalWin) {
+      gameState.status = 1;
+    }
+
+    if (isYCrossWin || isYHorizontalWin || isYVerticalWin) {
+      gameState.status = 2;
+    }
+
+    if (pieces.reduce((acc, row) => acc && row.every(el => el !== 0), true)) {
+      gameState.status = 3;
+    }
+  }
+
+  function updateActivePlayer() {
+    const originalPlayersTurn = gameState.playersTurn;
+    gameState.playersTurn = originalPlayersTurn === 1 ? 2 : 1;
+    document.getElementById(`player-label-${originalPlayersTurn}`).style.display = 'none';
+    document.getElementById(`player-label-${gameState.playersTurn}`).style.display = 'block';
+  }
+
+  function displayWinStatus() {
+    const statusElement = document.getElementById('status');
+    switch (gameState.status) { // see game state initialization for enum definition.
+      case 0:
+        return;
+      case 1:
+        statusElement.innerText = 'Player 1 wins!';
+        break;
+      case 2:
+        statusElement.innerText = 'Player 2 wins!';
+        break;
+      case 3:
+        statusElement.innerText = 'No one wins!';
+    }
+  }
+
+  function displayPlayAgain() {
+    document.getElementById('play-again').style.display = 'block';
   }
 
   function getIdForSquare(rowIdx, colIdx) {
-    return `square_${rowIdx}_${colIdx}`;
+    return `square-${rowIdx}-${colIdx}`;
   }
 
   function onClick(rowIdx, colIdx) {
+    // If the game has already been won, do not allow further play.
+    if (gameState.status !== 0) {
+      return;
+    }
+
     gameState.pieces[rowIdx][colIdx] = gameState.playersTurn;
     const targetElement = document.getElementById(getIdForSquare(rowIdx, colIdx));
-    targetElement.querySelector(gameState.playersTurn === 1 ? '.x' : '.o').className = 'played';
+    targetElement.innerText = gameState.playersTurn === 1 ? 'X' : 'O';
+    targetElement.className = 'played';
+
     updateGameStatus();
-    if (gameState.status !== 0) {
-      gameState.playersTurn = gameState.playersTurn === 1 ? 2 : 1
+    if (gameState.status === 0) {
+      updateActivePlayer();
     } else {
+      displayWinStatus();
+      displayPlayAgain();
+      console.log(`Player ${gameState.status} Won!`);
       // display winner and startover button.
     }
   }
 
   function initGameBoard() {
     const gameBoard = document.getElementById('gameboard');
-    const x = document.createElement('div');
-    x.innerText = 'X';
-    x.className = 'x';
-    const o = document.createElement('div');
-    o.innerText = 'O';
-    o.className = 'o';
 
     gameState.pieces.forEach((row, rowIdx) => {
       const rowWrapper = document.createElement('div');
       row.forEach((el, colIdx) => {
         const element = document.createElement('div');
-        element.id = `square_${rowIdx}_${colIdx}`;
+        element.id = getIdForSquare(rowIdx, colIdx);
         element.style.height = element.style.width = '50px';
+        element.style.marginBottom = '-10px';
         element.className = 'unplayed';
         element.onclick = () => onClick(rowIdx, colIdx);
-
-        element.appendChild(x.cloneNode(true));
-        element.appendChild(o.cloneNode(true));
         rowWrapper.appendChild(element);
       });
       gameBoard.appendChild(rowWrapper);
