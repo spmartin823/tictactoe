@@ -7,11 +7,6 @@
     <meta name="description" content="tictactoe">
     <meta name="author" content="seamus martin">
     <style>
-        .played {
-            text-align: center;
-            font-size: 40px;
-        }
-
         #gameboard {
             display: grid;
             grid-template-columns: repeat(3, auto);
@@ -20,11 +15,27 @@
             margin: auto;
         }
 
-        div[id^="square"] {
+        .square {
             cursor: pointer;
             border: 1px solid gray;
             width: 50px;
             height: 50px;
+        }
+
+        .square:hover {
+            border: 1px solid blue;
+            background: lightblue;
+        }
+
+        .square.played {
+            text-align: center;
+            font-size: 40px;
+            cursor: default; /* Don't let people click on parts of the board that have already been played */
+        }
+
+        .square.played:hover {
+            background: none;
+            border: 1px solid gray;
         }
     </style>
 </head>
@@ -118,7 +129,7 @@
   function displayMove(rowIdx, colIdx) {
     const targetElement = document.getElementById(getIdForSquare(rowIdx, colIdx));
     targetElement.innerText = gameState.playersTurn === 1 ? 'X' : 'O';
-    targetElement.className = 'played';
+    targetElement.className += ' played';
   }
 
   function displayPlayAgain() {
@@ -128,8 +139,8 @@
   }
 
   function onClick(rowIdx, colIdx) {
-    // If the game has already been won, do not allow further play.
-    if (gameState.status !== 0) {
+    // If the game has already been won, or there is already a piece in the square, do not update.
+    if (gameState.status !== 0 || gameState.pieces[rowIdx][colIdx] !== 0) {
       return;
     }
     // Logic
@@ -152,6 +163,7 @@
       row.forEach((el, colIdx) => {
         const element = document.createElement('div');
         element.id = getIdForSquare(rowIdx, colIdx);
+        element.className = 'square';
         element.onclick = () => onClick(rowIdx, colIdx);
         rowWrapper.appendChild(element);
       });
